@@ -10,7 +10,7 @@ const connectDB = async () => {  //Asynchronous method after completion returns 
 
      }catch(error){
         console.log("MONGODB CONNECTION ERROR:",error )
-        process.exit(1) //process is a predifined method in Node.js that gives the reference to the runnic process
+        process.exit(1) //process is a predifined method in Node.js that gives the reference to the running process
         
     }
 }

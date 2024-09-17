@@ -6,7 +6,7 @@ wrapping asynchronous code in a way that automatically catches any errors and pa
  //HELPER FILE
 //1. Wrapper function (using promise)  that wil be used everywhere will reduce redundancy
 const asyncHandler = (requestHandler)=>{ 
-    (req,res,next) => {
+   return (req,res,next) => {
         Promise.resolve(requestHandler(req, res, next))
         .catch((err) => next(err))
     }

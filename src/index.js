@@ -13,23 +13,13 @@ connectDB()
 //after DB is connected we must do error handling for i.e .then()/.catch()
 
 .then(() => {
-  try{ //Try catch block to check if app is litsening or not if not then  app.litsen will never execute
-   mongoose.connect(`${process.env.MONGODB_URI}/${DB_NAME}`) //MONGODB_URI is in .env $ DB_NAME is in constant.js
-    app.on("error", (error) => { //".on" is a listener of express 
-         console.log("ERROR:", error)  //this method checks if express is able to talk to the database or not by using ".on" listener and if not then it gives error when then is send that error , through a call back function in which we pass that error as a parameter and then that error throws
-         throw error
-    }) 
-    app.litsen(process.env.PORT || 8000, () => {
-      console.log(`. Server is running at port: ${process.env.PORT}`)})
-  }catch(error){
-      console.error("Error:", error)
-      throw error
-  }
+  app.listen(process.env.PORT || 8000, () => {
+      console.log(`⚙️ Server is running at port : ${process.env.PORT}`);
+  })
 })
 .catch((err) => {
-    console.log(`Mongo DB connection failed error`,err)
+  console.log("MONGO db connection failed !!! ", err);
 })
-
 /*
 
 //1st APPROACH :- THIS IS NOT A VERY PROFICIENT APPROACH AS THE INDEX.JS FILE GETS TOO MUCH POLLUTED, BETTER IS TO WRITE A FUNCTION ELSE WHERE AND CALL IT HERE

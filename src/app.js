@@ -26,4 +26,17 @@ app.use(express.static('public')) //public assets for recieved images files etc
 app.use(cookieParser()) //server to perform CRUD operation on user's browser and save and read secured cookies in user's browser
 
 
+//routes import 
+
+import userRoutes from './routes/user.routes.js'
+
+//routes declaration
+
+//.use is a middleware and if we use it instead of .get wjen we configure a route. It will take the user to user.routes.js
+app.use('api/v1/users', userRoutes) //'api/v1/users' is industrial practice 
+
+//url declaration will be like this
+//  http://localhost8000/api/v1/users/register
+
+
 export {app} //app is exported
