@@ -1,5 +1,7 @@
 import dotenv from "dotenv"   //it will not work from directly importing it we must configure it
 import connectDB from "./db/index.js";
+import {app} from './app.js'
+
 
 /* the given configuration will not work until you add an experimental feature in package.json like this in the "script" tag
   "dev": "nodemon -r dotnev/config --experimental-json-modules src/index.js"*/ 
@@ -13,12 +15,12 @@ connectDB()
 //after DB is connected we must do error handling for i.e .then()/.catch()
 
 .then(() => {
-  app.listen(process.env.PORT || 8000, () => {
-      console.log(`⚙️ Server is running at port : ${process.env.PORT}`);
-  })
+    app.listen(process.env.PORT || 8000, () => {
+        console.log(`⚙️ Server is running at port : ${process.env.PORT}`);
+    })
 })
 .catch((err) => {
-  console.log("MONGO db connection failed !!! ", err);
+    console.log("MONGO db connection failed !!! ", err);
 })
 /*
 

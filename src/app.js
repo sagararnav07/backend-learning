@@ -6,7 +6,7 @@ const app = express() //configure app with express
 
 //In Express.js, app.use() is a method used to add middleware functions to your Express application. Middleware functions are functions that have access to the request object (req), the response object (res), and the next middleware function in the application's request-response cycle. Middleware functions can perform tasks such as modifying the request, sending a response, or passing control to the next middleware.
 
-app.use() in express
+//app.use() in express
 
 //LIST OF MAJOR EXPRESS CONFIGURATIONS 
 
@@ -36,7 +36,7 @@ import userRoutes from './routes/user.routes.js'
 app.use('api/v1/users', userRoutes) //'api/v1/users' is industrial practice 
 
 //url declaration will be like this
-//  http://localhost8000/api/v1/users/register
+//  http://localhost:8000/api/v1/users/register
 
 
 export {app} //app is exported
