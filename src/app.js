@@ -32,7 +32,7 @@ import userRoutes from './routes/user.routes.js'
 
 //routes declaration
 
-//.use is a middleware and if we use it instead of .get wjen we configure a route. It will take the user to user.routes.js
+//.use is a middleware and if we use it instead of .get when we configure a route. It will take the user to user.routes.js
 app.use('/api/v1/users', userRoutes) //'api/v1/users' is industrial practice 
 
 //url declaration will be like this
