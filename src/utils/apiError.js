@@ -17,11 +17,11 @@ class apiError extends Error{
         stack = "" //error stack
     ){
         super(message) //override
-        this.statusCode = statusCodethis
+        this.statusCode = statusCode
         this.data = null
         this.message = message
         this.success = false;
-        this.errors = errors
+        this.error = error
         
         
 //Error.captureStackTrace(this):This captures the current execution stack trace and attaches it to the error object (this in this case).
