@@ -4,7 +4,35 @@ import { User } from "../models/user.model.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import { apiResponse } from "../utils/apiResponse.js"
 
+/* In lecture 14 we got to know that we would use refresh token so many times so everytime writing code for it
+doesn't make any sense so we must write a function tu reuse it multiple times*/
 
+const generateAccessAndRefreshTokens = async(userId)=>{
+    try {
+        await User.findById(userId) //as given above by the user
+        //generate access and refresh token using methods from "user.models.js" and store it in a variable 
+        const accessToken = user.generateAccessToken() 
+        const refreshToken= user.generateRefreshToken()
+
+        /*as we know refresh token must be also stored in database so we will write code to store refresh token in the database
+        also see that user is like an object so we will save the refresh token as we do it in objects*/
+
+        user.refreshToken = refreshToken
+
+/*Remember when you will save mongoose models will kick in and it is written there that password must be there {password: "true"} 
+/so use "{validateBeforeSave : false}" what it will do is it will not validate and just save the parameter */
+
+        user.save({validateBeforeSave : false})
+        //then return access and refresh token
+        return{accessToken, refreshToken}
+
+    } catch (error) {
+        throw new apiError(500,'Something went wrong while generating refresh and access token')
+    }
+
+}
+
+//----------------------------------REGISTER-------------------------------------
 const registerUser = asyncHandler( async (req, res) => {
 //Algotithm desing of registerUser:-
 
@@ -115,4 +143,122 @@ const registerUser = asyncHandler( async (req, res) => {
      ) 
 })
 
-export { registerUser };
+
+
+//---------------------------LOGIN------------------------------------------------
+
+const loginUser = asyncHandler(async(req, res) => {
+    //Step 1. req body -> data "body se data rquest"
+    //Step 2. username or email avialable
+    //Step 3. find the user
+    //Step 4. password check
+    //Step 5. access and refresh token 
+    //Step 6. send access and refresh token in cookie
+    //Step 7. send response as cookie
+
+
+//Step 1. req body -> data "body se data rquest"
+const {email, username, password} = req.body
+
+if(!username || !email) {
+    throw new apiError(400, "username or email is required")
+}
+
+
+//Step 2. Check if the username or email avialable in the database or not
+const user = await User.findOne({
+    $or: [{username},{email}]
+})
+
+
+
+//Step 3: if the entered username or email is not found in the database
+if(!user){
+    throw new apiError(400, "User doesn't exist")
+}
+
+
+//Step 4. password check
+const isPasswordValid = await user.isPasswordCorrect(password) //taken from user.model.js bcrypt
+
+if(!isPasswordValid){
+    throw new apiError(400, "Invailid user credentials")
+}
+
+
+
+//Step 5. access and refresh token 
+ //function is already created above and also returned so just call the function with parameter and give your credentials to it
+ const {accessToken, refreshToken} = await generateAccessAndRefreshTokens(user._id) //remember "._id" is the mongodb database id
+
+ //also you must not send the logged in user 'refreshToken' and 'password' so you can write code for it
+ const loggedInUser = await User.findById(user._id).select("-password -refreshToken")
+
+
+
+ //Step 6. send access and refresh token in cookie
+
+ const options = {
+    httpOnly: true, // "httpOnly: true"  ---> This ensures that the cookie is HTTP-only, which means it cannot be accessed through JavaScript (i.e., document.cookie). This enhances security by preventing client-side scripts from reading the cookie, reducing the risk of cross-site scripting (XSS) attacks.
+    secure: true  //"secure: true" ----> This setting ensures that the cookie is only sent over secure HTTPS connections. It prevents the cookie from being transmitted over unencrypted HTTP, reducing the risk of eavesdropping or man-in-the-middle attacks.
+ }
+
+
+ //Step 7. send response as cookie
+
+ //you can send multiple cookies by chaining ".cookie()"
+ return res.status(200)
+ .cookie("accessToken:", accessToken, options)
+ .cookie("refreshToken:", refreshToken, options)
+ .json(   //now it's good practice to send an external .json response so if user wants to save it externally it he can do it
+    new apiResponse( //go to api response to check what you have can send 1.statuscode 2.data 3.message
+        200, //statuscode
+        {
+            user: loggedInUser, accessToken, refreshToken //data
+        },
+        "User is logged in" //message
+    )
+ )
+
+})
+
+
+//---------------------------LOGOUT------------------------------------------------
+
+//Steps to logout
+//STEP 1:- clear cookies
+//STEP 2:- reset refresh token
+
+/* Now there is a problem that during logout how we will find the user? We can use "User.findbyid" as for logout there is no method that gives id
+To solve this problem we will use an aurthentication middleware, but here we will design this middleware on our own  */
+const logoutUser = asyncHandler(async(req, res) => {
+    //after creating a middleware called auth.middleware.js we can access "req.user" now
+ await User.findByIdAndUpdate(
+    req.user._id,
+    {
+        $set: {  //mongodb operator to set a value
+            refreshToken: undefined  //refresh token will be undefined after verifyJWT method will execute
+        }
+    },
+    {
+        new: true //new token will be assigned
+    }
+ )
+
+ //cookie management 
+ const options = {
+    httpOnly: true, 
+    secure: true 
+ }
+//clear cookies
+ return res.status(200)
+ .clearCookie("accessToken")
+ .clearCookie("refreshToken")
+ .json(new apiResponse(200, {}, "User Logged Out"))
+})
+
+
+export { registerUser,
+         loginUser,
+         logoutUser
+ };
