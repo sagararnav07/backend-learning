@@ -9,7 +9,7 @@ doesn't make any sense so we must write a function tu reuse it multiple times*/
 
 const generateAccessAndRefreshTokens = async(userId)=>{
     try {
-        await User.findById(userId) //as given above by the user
+        const user = await User.findById(userId) //as given above by the user
         //generate access and refresh token using methods from "user.models.js" and store it in a variable 
         const accessToken = user.generateAccessToken() 
         const refreshToken= user.generateRefreshToken()
@@ -160,7 +160,7 @@ const loginUser = asyncHandler(async(req, res) => {
 //Step 1. req body -> data "body se data rquest"
 const {email, username, password} = req.body
 
-if(!username || !email) {
+if(!(username || email)) {
     throw new apiError(400, "username or email is required")
 }
 
@@ -174,7 +174,7 @@ const user = await User.findOne({
 
 //Step 3: if the entered username or email is not found in the database
 if(!user){
-    throw new apiError(400, "User doesn't exist")
+    throw new apiError(400, "User does nott exist")
 }
 
 
@@ -208,8 +208,8 @@ if(!isPasswordValid){
 
  //you can send multiple cookies by chaining ".cookie()"
  return res.status(200)
- .cookie("accessToken:", accessToken, options)
- .cookie("refreshToken:", refreshToken, options)
+ .cookie("accessToken",accessToken, options)
+ .cookie("refreshToken",refreshToken, options)
  .json(   //now it's good practice to send an external .json response so if user wants to save it externally it he can do it
     new apiResponse( //go to api response to check what you have can send 1.statuscode 2.data 3.message
         200, //statuscode
@@ -248,12 +248,13 @@ const logoutUser = asyncHandler(async(req, res) => {
  //cookie management 
  const options = {
     httpOnly: true, 
-    secure: true 
+    secure: process.env.NODE_ENV === 'production' ,
+    sameSite: 'strict'
  }
 //clear cookies
  return res.status(200)
- .clearCookie("accessToken")
- .clearCookie("refreshToken")
+ .clearCookie("accessToken", options)
+ .clearCookie("refreshToken", options)
  .json(new apiResponse(200, {}, "User Logged Out"))
 })
 
