@@ -1,5 +1,5 @@
 import {Router} from "express";
-import { loginUser, logoutUser, registerUser } from "../controller/user.controller.js";
+import { loginUser, logoutUser, registerUser, refreshAccessToken } from "../controller/user.controller.js";
 import{ upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
@@ -33,5 +33,6 @@ router.route("/login").post(loginUser)
 /* now it will be a route that will execute two methods simultaneously 1. from auth.middlesre.js and other from user.controller.js 
 that's why we used next() in auth.middleware.js. What next() does is it tell that my work is done move onto next*/
 router.route("/logout").post(verifyJWT,logoutUser)
+router.route("/refresh-token").post(refreshAccessToken)
 
 export default router

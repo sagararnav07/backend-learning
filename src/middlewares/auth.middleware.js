@@ -7,8 +7,8 @@ import { apiError } from "../utils/apiError.js"
 export const verifyJWT = asyncHandler(async(req, _, next) => {
 
 try {
-    //console.log("Cookies:", req.cookies);
-//console.log("Authorization Header:", req.header("Authorization"));
+    console.log("Cookies:", req.cookies);
+console.log("Authorization Header:", req.header("Authorization"));
 
 
     //1. Retrieve a token 
@@ -21,7 +21,7 @@ try {
 // const token = req.cookie?.accessToken || req.header("Authorization")?.replace("Bearer ", "")
  const token = req.cookies['accessToken'] || req.cookies['accessToken:'] || req.header("Authorization")?.replace("Bearer ", "");//facing problem due to cookies so added this line instead of the upper one as there are multiple typres of access and refresh tokens printed
 
-   // console.log("Token:", token);
+   console.log("Token:", token);
          
     //2. to check if token is not avialable
         if(!token){
