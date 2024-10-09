@@ -4,6 +4,7 @@ import { User } from "../models/user.model.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import { apiResponse } from "../utils/apiResponse.js"
 import jwt from "jsonwebtoken"
+import mongoose from "mongoose";
 
 /* In lecture 14 we got to know that we would use refresh token so many times so everytime writing code for it
 doesn't make any sense so we must write a function tu reuse it multiple times*/
@@ -316,8 +317,151 @@ try {
 
 })
 
+//---------------------------change password-----------------------
+
+  
+//Function for changing password of the user and it depends upon you how many fields you want to take
+const changeCurrentPassword = asyncHandler(async(req,res)=>{
+    //field taken from req.body
+   const {oldPassword,newPassword} = req.body
+
+/* Now in the "auth" middleware we did "req.user = user" that means there is a user logged in so here 
+we will check if there is a user conditionally then give it's id like this "req.user?._id"" */
+
+    const user = await User.findById(req.user?._id)
+    const isPasswordCorrect = await user.isPasswordCorrect(oldPassword) //isPasswordCorrect is a function in "user.model.js" and it return true or false
+
+    //if password enetred is not correct
+    if(!isPasswordCorrect){
+       throw new apiError(400, "Invailid old password")
+    }
+   //set new password
+    user.password = newPassword
+    await user.save({validateBeforeSave: false})
+    
+   //response
+
+   return res
+   .status(200)
+   .json(new apiResponse(200, {}, "Password changed successfully"))
+})
+
+//----------------------------- fetching current user ----------------------
+
+const getCurrentUser = asyncHandler(async(req,res)=>{
+    return res
+    .status(200)
+    .json(200, req.user, "Current user fetched successfully")
+})
+
+//-------------------------------update account details ---------------------
+
+const updateAccountDetails = asyncHandler(async(req, res) => {
+    const {fullname,email} = req.body
+
+    //if fullname or email is not given by the user
+
+    if(!fullname || !email){
+        throw new apiError(400,"All fields are required")
+    }
+    
+    //if email and fullname is given
+    const user = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+           $set:{  //setting up all the values
+            fullname: fullname,
+            email: email 
+           }
+        },{new:true}).select("-password") //don't give the password field
+
+        //response
+        return res
+        .status(200)
+        .json(new apiResponse(200, user, "Account details successfully updated"))
+
+})
+//--------------------------update user avatar--------------------------------
+
+const updateUserAvatar = asyncHandler(async(req, res)=> {
+    const avatarLocalPath = req.file?.path //through multer middleware
+
+    //if no file is uploaded then
+    if(!avatarLocalPath){
+        throw new apiError(400,"Avatar file is required")
+    }
+
+    //upload file on cloudinary
+    const avatar = await uploadOnCloudinary(avatarLocalPath)
+
+    //if not uploaded
+    if(!avatar.url){
+        throw new apiError(400, "Error while uploading avatar on cloudinary")
+    }
+
+    const user = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set:{
+                avatar: avatar.url
+            }
+        },{new: true}
+    ).select("-password")
+
+    //response
+
+    return res
+    .status(200)
+    .json(
+        new apiResponse(200,user,"avatar uploaded succesfully")
+    )
+})
+
+//--------------------------update user coverimage--------------------------------
+
+const updateUserCoverImage = asyncHandler(async(req, res)=> {
+    const coverImageLocalPath = req.file?.path //through multer middleware
+
+    //if no file is uploaded then
+    if(!coverImageLocalPath){
+        throw new apiError(400,"Cover Image file is required")
+    }
+
+    //upload file on cloudinary
+    const coverimage = await uploadOnCloudinary(coverImageLocalPath)
+
+    //if not uploaded
+    if(!coverimage.url){
+        throw new apiError(400, "Error while uploading coverimage on cloudinary")
+    }
+
+    const user = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set:{
+                coverimage: coverimage.url
+            }
+        },{new: true}
+    ).select("-password")
+
+
+    //response
+
+    return res
+    .status(200)
+    .json(
+        new apiResponse(200,user,"cover image uploaded succesfully")
+    )
+})
+
+
 export { registerUser,
          loginUser,
          logoutUser,
-         refreshAccessToken
+         refreshAccessToken,
+         changeCurrentPassword,
+         getCurrentUser,
+         updateAccountDetails,
+         updateUserAvatar,
+         updateUserCoverImage
  };
