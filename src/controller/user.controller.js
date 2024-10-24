@@ -468,7 +468,8 @@ const getUserChannelProfile = asyncHandler(async(req, res) => {
     //aggregation pipelines
     const channel = await User.aggregate([
 
-        //pipelines
+        //pipelines 
+        //note: in key value pairs when we enter a value in mongo db we use it in 'lowercase' and 'plural'
         {
             $match: { //match pipeline as what parameters to match
                 username: username?.toLowerCase() // "?" to check if username exist
@@ -531,6 +532,53 @@ const getUserChannelProfile = asyncHandler(async(req, res) => {
         new apiResponse(200, channel[0], "User channel fetched successfully")
     )
 })
+   
+const getWatchHistory = asyncHandler(async(req,res) => {
+    const user = await User.aggregate([
+        {
+            $match:{ //in aggregation pipelines every data go directly so therefore we will have to create new id as it cannot detect 
+              _id: new mongoose.Types.ObjectId(req.user._id) //as it doesn't get req.user._id
+
+            }
+        },
+        {
+            $lookup: {
+                from: "videos",
+                localField: "watchHistory",
+                foreignField: "_id",
+                as: "watchHistory",
+                pipeline: [ //add sub pipelines like this
+                    {
+                        $lookup:{
+                            from: "users",
+                            localField: "owner",
+                            foreignField: "_id",
+                            as: "owner",
+                            pipeline: [
+                                {
+                                    $project:{
+                                        fullname:1,
+                                        username:1,
+                                        avatar:1
+                                    }
+                                },//the following pipeline is to send data in a better form to the frontent it will send the forst value throught which the frontend engineer can retrieve data using ".owner"
+                                {
+                                    $addFields:{
+                                        owner:{
+                                            $first: "owner"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+
+                ]
+            }
+        }
+    ])
+})
+
 
 
 
@@ -543,5 +591,6 @@ export { registerUser,
          updateAccountDetails,
          updateUserAvatar,
          updateUserCoverImage,
-         getUserChannelProfile
+         getUserChannelProfile,
+         getWatchHistory
  };
