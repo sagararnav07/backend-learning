@@ -442,7 +442,7 @@ const updateUserCoverImage = asyncHandler(async(req, res)=> {
                 coverimage: coverimage.url
             }
         },{new: true}
-    ).select("-password")
+    ).select("-password") 
 
 
     //response
@@ -454,6 +454,85 @@ const updateUserCoverImage = asyncHandler(async(req, res)=> {
     )
 })
 
+//--------------------------user channel profile--------------------------------
+
+//using mongodb aggregation pipelines
+
+const getUserChannelProfile = asyncHandler(async(req, res) => {
+    const {username} = req.params
+
+    if (!username?.trim()) {
+        throw new apiError(400, "username is missing")
+    }
+
+    //aggregation pipelines
+    const channel = await User.aggregate([
+
+        //pipelines
+        {
+            $match: { //match pipeline as what parameters to match
+                username: username?.toLowerCase() // "?" to check if username exist
+            }
+        },
+        {
+            $lookup: { //kaha se dekhna hai :- how many subscribers to your channel
+                from: "subscriptions",//user.model.subscription
+                localField: "_id",
+                foreignField: "channel",
+                as: "subscribers"
+            }
+        },
+        {
+            $lookup: { //how many channels you have subscribed
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "subscriber", //field above line 482
+                as: "subscribedTo"
+            }
+        },
+        {
+            $addFields: { 
+                subscribersCount: { //subscribers count
+                    $size: "$subscribers" //field
+                },
+                channelsSubscribedToCount: {  //whom you have subscribed to
+                    $size: "subscribedTo"
+                },
+                isSubscribed: { //we will send frontend condition if the cannel is subscribed then 
+                    $cond: {
+                        if: {$in: [req.user?._id, "$subscribers.subscriber"]},/*  '$subscribers':- is now a fiels so that's why we put a "$" symbol behind it*/
+                        then: true,
+                        else: false
+                    }
+                }
+            }
+        },
+        {
+            $project: { //project to the user if you want to project flag it 1, if not then 0
+                fullname: 1,
+                username: 1,
+                subscribersCount: 1,
+                channelsSubscribedToCount: 1,
+                isSubscribed: 1,
+                avatar: 1,
+                coverimage: 1,
+                email: 1
+
+            }
+        }
+    ])
+    if (!channel?.length) {
+        throw new apiError(404, "channel does not exists")
+    }
+
+    return res
+    .status(200)
+    .json(
+        new apiResponse(200, channel[0], "User channel fetched successfully")
+    )
+})
+
+
 
 export { registerUser,
          loginUser,
@@ -463,5 +542,6 @@ export { registerUser,
          getCurrentUser,
          updateAccountDetails,
          updateUserAvatar,
-         updateUserCoverImage
+         updateUserCoverImage,
+         getUserChannelProfile
  };
