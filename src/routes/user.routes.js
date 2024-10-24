@@ -1,5 +1,16 @@
 import {Router} from "express";
-import { loginUser, logoutUser, registerUser, refreshAccessToken, changeCurrentPassword } from "../controller/user.controller.js";
+import { loginUser, 
+    logoutUser,
+    registerUser,
+    refreshAccessToken, 
+    changeCurrentPassword,
+    getCurrentUser,
+    updateAccountDetails,
+    updateUserAvatar,
+    updateUserCoverImage,
+    getUserChannelProfile, 
+    getWatchHistory 
+} from "../controller/user.controller.js";
 import{ upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
@@ -34,6 +45,12 @@ router.route("/login").post(loginUser)
 that's why we used next() in auth.middleware.js. What next() does is it tell that my work is done move onto next*/
 router.route("/logout").post(verifyJWT,logoutUser)
 router.route("/refresh-token").post(refreshAccessToken)
-router.route("/change-password").post(changeCurrentPassword)
+router.route("/change-password").post(verifyJWT,changeCurrentPassword)
+router.route("/current-user").get(verifyJWT, getCurrentUser)
+router.route("/update-account").patch(verifyJWT, updateAccountDetails)
+router.route("/avatar").patch(verifyJWT, upload.single("/avatar"), updateUserAvatar) //verifyJWT as the user must be logged in to upload files
+router.route("/cover-image").patch(verifyJWT, upload.single("/coverimage"), updateUserCoverImage)
+router.route("/c/:username").get(verifyJWT, getUserChannelProfile) //"/c/:username" is because data is taken by params
+router.route("/history").get(verifyJWT, getWatchHistory)
 
 export default router
