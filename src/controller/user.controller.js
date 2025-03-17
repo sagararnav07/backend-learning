@@ -36,7 +36,7 @@ const generateAccessAndRefreshTokens = async(userId)=>{
 
 //----------------------------------REGISTER-------------------------------------
 const registerUser = asyncHandler( async (req, res) => {
-//Algotithm desing of registerUser:-
+//Algotithm desing of registerUser:- 234r2h
 
     //STEP:1 get user details from frontend
     //STEP:2 validation -- not empty

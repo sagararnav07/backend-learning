@@ -26,7 +26,7 @@ app.use(express.static('public')) //public assets for recieved images files etc
 app.use(cookieParser()) //server to perform CRUD operation on user's browser and save and read secured cookies in user's browser
 
 
-//routes import 
+//routes import
 
 import userRoutes from './routes/user.routes.js'
 
