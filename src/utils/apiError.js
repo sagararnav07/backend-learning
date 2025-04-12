@@ -16,10 +16,10 @@ class apiError extends Error{
         error = [],
         stack = "" //error stack
     ){
-        super(message) //override
+        super(message) //accessing parent class constructor in which accesing a parameter calles "message"
         this.statusCode = statusCode
         this.data = null
-        this.message = message
+        this.message = message //override kar rahe hai nahi to by default "Something went wrong toh chala hi jaega"
         this.success = false;
         this.error = error
         
