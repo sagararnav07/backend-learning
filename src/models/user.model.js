@@ -59,11 +59,11 @@ const userSchema = new Schema(
     //PASSWORD AND ENCRYPTION :- using "bcrypt" -- visit bcrypt.md
     
 
-/*It is not possible to encrypt you data directly so we use hooks from mongoose. for i.e we use ".pre"
+/*It is not possible to encrypt your data directly so we use hooks from mongoose. for i.e we use ".pre"
 hooks that runs when data is going to validate,save,remove,updateOne,deleteOne,init (note: init hooks are synchronous)*/
 
 /*"next": is a middleware jab end me aapka kaam ho gya ho to "next" ko callback krna pdta hai ki flag aage pass krdo*/ 
-userSchema.pre("save", async function (next) {  //here we should callback "next" function but instead of useing an arrow function we use "function(){}" necause arrow function do not give current context from "this" keyword also we use "async" as it takes time to complete
+userSchema.pre("save", async function (next) {  //here we should callback "next" function but instead of useing an arrow function we use "function(){}" because arrow function do not give current context from "this" keyword also we use "async" as it takes time to complete
     
     if(!this.isModified("password")) //this.isModified("password"): This is a method provided by Mongoose to check whether the field "password" has been modified. It returns true if the password was changed or newly set, and false otherwise.!this.isModified("password"): The negation (!) is used to check if the password hasn't been modified. If the password hasn't been modified (i.e., false), the code calls return next();.
 
