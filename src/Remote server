@@ -1,0 +1,36 @@
+const express = require('express')
+const fs = require('fs')
+const path = require('path')
+
+const app = express()
+
+PORT = 3000
+
+//Creating a function that will show all the directories
+
+app.get('/file', function(req,res){
+    const name = path.join(__dirname,'./file/')
+    fs.readdir(name,function(err,file){
+        if(err){
+            console.log(err)
+            res.status(400).json(err,{message: `error showing files`})
+            
+            
+        }else{
+            res.status(201).json(file,{message: `data loaded succesfully`})
+        }
+    })
+})
+
+app.get('/file/:body', (req,res)=>{
+    const name = path.join(__dirname,'./file/',req.params.body)
+    fs.readFile(name,'utf-8', function(err,data){
+        if(err){
+            res.status(400).json(err,{message : `error loading data`})
+        }else{
+            res.status(200).send(data)
+        }
+    })
+})
+
+app.listen(PORT,console.log(`The app is listening on port ${PORT}`))
